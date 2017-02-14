@@ -1,0 +1,9 @@
+good/article.f: typechecking the source program FAILED.
+good/conversion.f: typechecking the source program FAILED.
+good/equations.f: typechecking the source program FAILED.
+good/identity.f: typechecking the source program FAILED.
+good/ilist.f: typechecking the source program FAILED.
+good/interpreter.f: typechecking the source program FAILED.
+good/list.f: typechecking the source program FAILED.
+good/variable-inutile.f: typechecking the source program FAILED.
+good/variations.f: typechecking the source program FAILED.

@@ -1,0 +1,90 @@
+let translate (prog : Terms.program) =
+  match prog with
+  | Prog (tTable, dataTable, t) ->
+     let t' = translate_term t in
+     Prog (tTable, dataTable, t')
+
+
+let rec translate_term (p : program) (tenv : tenv) (hyps : equations) : fterm = function
+  | TeVar (at) -> TeVar at
+                         
+  | TeAbs (at, ty1, t1, info) ->
+     let ty = infer p (Export.bind xenv at) loc hyps (bind at ty1 tenv) t1 in
+     TyArrow (ty1, ty)
+               
+  | TeApp (t1, t2, info) ->
+     let ty1 = infer p xenv loc hyps tenv t1 in
+     (match ty1 with
+      | TyArrow (ty1', ty2') ->
+         let ty2 = infer p xenv loc hyps tenv t2 in
+         if equal ty2 ty1' then
+           ty2'
+         else
+           (print_string ("ty2 : " ^ (print_type xenv ty2) ^ "\n");
+            print_string ("ty1': " ^ (print_type xenv (TyArrow (ty1', ty2'))) ^ "\n");
+            failwith "Does not typecheck! (App)")
+      | _ -> failwith "Does not typecheck! (App')")
+       
+  | TeLet (at, t1, t2) ->
+     let t1' = translate_term p t1 in
+     let t2' = translate_term p t2 in
+     (TeLet (atk, t1', t2'), D')
+       
+  | TeFix  (at, ty, t) ->
+     let ty1 = infer p (Export.bind xenv at) loc hyps (bind at ty tenv) t in
+     if equal ty1 ty then
+       ty1
+     else
+       failwith "Does not typecheck (TeFix)"
+                                   
+  | TeTyAbs (at, t1) ->
+     (*Add var freshness to it*)
+     let ty = infer p (Export.bind xenv at) loc hyps tenv t1 in
+     TyForall (abstract at ty)
+
+  | TeTyApp (t, ty) ->
+     let ty1 = infer p xenv loc hyps tenv t in
+     (match ty1 with
+      | TyForall (context) ->
+         fill context ty
+              
+      | _ -> failwith "Does not typecheck (TeTyApp)")
+       
+              
+  | TeData (at, tys, terms) ->
+     let tyScheme = type_scheme p at in
+     let ty1 = remove_forall tyScheme tys in
+     let (d, ty2) = build_equations [] ty1 in
+     print_string ("Esquema: " ^ (print_type xenv tyScheme) ^ "\n");
+     if entailment hyps d then
+       (match ty2 with
+        | TyArrow ((TyTuple tuple), (TyCon (atCons, listTy))) ->
+           List.map2 (fun x y -> check p xenv hyps tenv x y) terms tuple;
+           (*Need to verify if each term in "terms actually has the right types"*)
+           TyCon (atCons, listTy)
+        | _ -> failwith "Wrong type scheme")
+     else
+       failwith "Equations do not entail"
+       
+  | TeTyAnnot (t, ty) ->
+     let ty' = infer p xenv loc hyps tenv t in
+     (*print_string ("Annot: " ^ (print_type xenv ty) ^ "\n");*)
+     ty
+                           
+  | TeMatch (t, ty, clauses) ->
+   
+     let ty1 = infer p xenv loc hyps tenv t in
+     
+     (*let tyScheme = type_scheme p at in
+
+     let y = infer_clause in
+     (match y with
+     | Arrow t1 t2 ->
+     | _ -> failwith "Does not typecheck");*)
+     
+     print_string ("Match: " ^ (print_type xenv ty1) ^ "\n");
+     ty
+
+  | TeLoc (location, t) ->
+     infer p xenv location hyps tenv t
+            

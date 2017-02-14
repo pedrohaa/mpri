@@ -1,0 +1,4 @@
+warnings/dead1.f: typechecking FAILED.
+warnings/dead2.f: typechecking FAILED.
+warnings/dead3.f: typechecking FAILED.
+warnings/redundant.f: typechecking FAILED.

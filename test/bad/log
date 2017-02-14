@@ -1,0 +1,32 @@
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/amismatch1.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/amismatch2.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/amismatch3.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/amismatch4.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/expected1.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/expected2.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/expected3.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/mismatch1.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/mismatch2.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/mismatch3.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/mismatch4.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/missing1.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/missing2.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/tcmismatch.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/unsatisfied1.f: typechecking the source program FAILED with an exception.
+Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+bad/unsatisfied2.f: typechecking the source program FAILED with an exception.
