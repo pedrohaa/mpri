@@ -9,6 +9,7 @@ let get_Some : 'a option -> 'a = function
 
 let ftv_env acc tenv = AtomMap.fold (fun key x y -> AtomSet.union (ftv x) y) tenv acc
 
+(*Creates the packaging around the new term*)
 let create_defunct_term (term : fterm) (arrow : Atom.atom) (apply : Atom.atom) t : fterm =
   let alpha1 = Atom.fresh (Identifier.mk "type" Syntax.type_sort) in
   let alpha2 = Atom.fresh (Identifier.mk "type" Syntax.type_sort) in
