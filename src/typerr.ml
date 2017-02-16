@@ -93,3 +93,17 @@ let deconstruct_tycon xenv loc : ftype -> Atom.atom =
     | ty ->
 	expected_form xenv loc "an algebraic data" ty
 
+let deconstruct_tycon2 xenv loc : ftype -> (Atom.atom * ftype list) =
+  function
+    | TyCon (tc, tlist) ->
+	(tc, tlist)
+    | ty ->
+	expected_form xenv loc "an algebraic data" ty
+
+let deconstruct_tuple xenv loc : ftype -> ftype list =
+  function
+    | TyTuple flist -> 
+    flist
+    | ty ->
+    expected_form xenv loc "a tuple" ty    
+

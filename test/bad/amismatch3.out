@@ -1,0 +1,1 @@
+Esquema: forall a_1_. { a_1_; list a_1_ } -> list a_1_

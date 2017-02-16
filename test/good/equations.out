@@ -1,0 +1,1 @@
+forall a. eq (forall b. b) (forall b. a) -> a

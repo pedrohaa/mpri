@@ -1,4 +1,4 @@
-OCAMLBUILD := ocamlbuild -classic-display -use-menhir -cflags "-g" -lflags "-g"
+OCAMLBUILD := ocamlbuild -classic-display -use-menhir -cflags "-g" -lflags "-g" -ocamlopt "ocamlopt -runtime-variant _pic"
 INCLUDE    := -Is pllib
 MAIN       := main
 EXEC       := joujou

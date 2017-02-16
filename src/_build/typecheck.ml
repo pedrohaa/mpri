@@ -95,71 +95,67 @@ let rec infer              (* [infer] expects... *)
 
   | TeVar (at) -> lookup at tenv
                          
-  | TeAbs (at, type_domain, term_body, info) ->
+  | TeAbs (at, type_domain, term_body, info) -> (*\lambda at : type_domain. term_body*)
      let type_image = infer p (Export.bind xenv at) loc hyps (bind at type_domain tenv) term_body in
+     info := Some {hyps = hyps; tenv = tenv; fty = TyArrow (type_domain, type_image)};
      TyArrow (type_domain, type_image)
                
-  | TeApp (t1, t2, info) ->
+  | TeApp (t1, t2, info) -> (*t1 t2*)
      let type_arrow = infer p xenv loc hyps tenv t1 in
      let (domain, image) = deconstruct_arrow xenv loc type_arrow in
      let type_domain' = infer p xenv loc hyps tenv t2 in
-     (if equal domain type_domain' then
-        image
+     if equal domain type_domain' then
+       (info := Some {domain = domain; codomain = image}; 
+       image)
      else
-       failwith "Does not typecheck! (App)")
+       failwith "Does not typecheck! (App)"
 
-  | TeLet (at, t1, t2) ->
+  | TeLet (at, t1, t2) -> (*let at = t1 in t2*)
      let ty1 = infer p (Export.bind xenv at) loc hyps tenv t1 in
      let ty2 = infer p (Export.bind xenv at) loc hyps (bind at ty1 tenv) t2 in
      ty2
      
-  | TeFix  (at, ty, t) ->
+  | TeFix (at, ty, t) -> (*fix at : ty . t *)
      let ty1 = infer p (Export.bind xenv at) loc hyps (bind at ty tenv) t in
      if equal ty1 ty then
        ty1
      else
        failwith "Does not typecheck (TeFix)"
                                    
-  | TeTyAbs (at, t1) ->
-     (*Add var freshness to it*)
-     let ty = infer p (Export.bind xenv at) loc hyps tenv t1 in
-     TyForall (abstract at ty)
+  | TeTyAbs (at, t1) -> (*\Lambda at. t1*)
+     let type_body = infer p (Export.bind xenv at) loc hyps tenv t1 in
+     TyForall (abstract at type_body)
 
-  | TeTyApp (t, ty) ->
-     let ty1 = infer p xenv loc hyps tenv t in
-     (match ty1 with
-      | TyForall (context) ->
-         fill context ty
-              
-      | _ -> failwith "Does not typecheck (TeTyApp)")
-       
-              
-  | TeData (at, tys, terms) ->
-     let tyScheme = type_scheme p at in
-     let ty1 = remove_forall tyScheme tys in
-     let (d, ty2) = build_equations [] ty1 in
+  | TeTyApp (t, tau) -> (*t \tau*)
+     let type_t = infer p xenv loc hyps tenv t in
+     let context = deconstruct_univ xenv loc type_t in
+     fill context tau
+             
+  | TeData (k, types, terms) -> (* k types terms*)
+     let tyScheme = type_scheme p k in
+     let type_no_quant = remove_forall tyScheme types in
+     let (d, type_no_eqs) = build_equations [] type_no_quant in
      print_string ("Esquema: " ^ (print_type xenv tyScheme) ^ "\n");
      if entailment hyps d then
-       (match ty2 with
-        | TyArrow ((TyTuple tuple), (TyCon (atCons, listTy))) ->
-           List.map2 (fun x y -> check p xenv hyps tenv x y) terms tuple;
-           (*Need to verify if each term in "terms actually has the right types"*)
-           TyCon (atCons, listTy)
-        | _ -> failwith "Wrong type scheme")
+       let (domain, codomain) = deconstruct_arrow xenv loc type_no_eqs in
+       let tuple = deconstruct_tuple xenv loc domain in
+       let (atCons, listTy) = deconstruct_tycon2 xenv loc codomain in
+       (*Need to verify if each term in "terms actually has the right types"*)
+       List.map2 (fun x y -> check p xenv hyps tenv x y) terms tuple;
+       (*If they don't have the same length, List.map2 will not work*)
+       TyCon (atCons, listTy)
      else
        failwith "Equations do not entail"
        
-  | TeTyAnnot (t, ty) ->
-     let ty' = infer p xenv loc hyps tenv t in
+  | TeTyAnnot (term, ty) ->
      (*print_string ("Annot: " ^ (print_type xenv ty) ^ "\n");*)
+     check p xenv hyps tenv term ty;
      ty
-                           
-  | TeMatch (t, ty, clauses) ->
+
+  | TeMatch (term, ty, clauses) -> (*Match term of ty with clauses*)
    
-     let ty1 = infer p xenv loc hyps tenv t in
-     (*    let ty2 = infer_clause p xenv loc hyps tenv clauses
-     
-     print_string ("Match: " ^ (print_type xenv ty1) ^ "\n");*)
+     let type_domain = infer p xenv loc hyps tenv term in
+     let (k, types) = deconstruct_tycon2 xenv loc type_domain in
      ty
 
   | TeLoc (location, t) ->
@@ -194,12 +190,11 @@ and check                  (* [check] expects... *)
   
   match term with
   | TeLoc (loc, term) ->
-
       let inferred = infer p xenv loc hyps tenv term in
-      if equal inferred expected then
+      if entailment hyps [(inferred, expected)] then
         ()
       else
-        failwith "CHECK IS NOT COMPLETE YET!" (* do something here! *)
+        mismatch xenv loc hyps expected inferred
 
   | _ ->
       (* out of luck! *)

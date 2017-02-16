@@ -1,1 +1,4 @@
-Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+File "bad/mismatch1.f", line 3, characters 38-39:
+Type mismatch.
+Expected: a -> a
+Inferred: a

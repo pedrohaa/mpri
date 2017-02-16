@@ -1,4 +1,4 @@
-warnings/dead1.f: typechecking FAILED.
-warnings/dead2.f: typechecking FAILED.
-warnings/dead3.f: typechecking FAILED.
-warnings/redundant.f: typechecking FAILED.
+warnings/dead1.f: typechecking did not produce a warning -- this is WRONG!
+warnings/dead2.f: typechecking did not produce a warning -- this is WRONG!
+warnings/dead3.f: typechecking did not produce a warning -- this is WRONG!
+warnings/redundant.f: typechecking did not produce a warning -- this is WRONG!

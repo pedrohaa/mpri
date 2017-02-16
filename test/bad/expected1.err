@@ -1,1 +1,3 @@
-Fatal error: exception Failure("TYPECHECKING IS NOT IMPLEMENTED YET!")
+File "bad/expected1.f", line 4, characters 0-17:
+Type mismatch: I expected an arrow type.
+Inferred: forall a. a -> a

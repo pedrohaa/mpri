@@ -1,0 +1,2 @@
+Esquema: forall a b. {} -> eq a b where a = b
+eq int bool
