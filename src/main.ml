@@ -66,5 +66,6 @@ let () =
     if !please_typecheck then
       printf "%s\n%!" (print_type xenv ty);
     if !please_translate then
-      printf "%s\n%!" (print_program (Defunct.translate prog))
-
+      ( 
+        printf "%s\n%!" (print_program (Defunct.translate prog));
+       )             

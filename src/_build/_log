@@ -70,7 +70,7 @@ menhir --ocamlc '/usr/bin/ocamlc.opt -g -I pllib' --explain --infer parser.mly #
 # Target: main.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:main.cmo, file:main.ml, implem, ocaml, quiet, traverse }
 /usr/bin/ocamlc.opt -c -g -I pllib -o main.cmo main.ml # cached
 # Target: defunct.ml.depends, tags: { extension:ml, file:defunct.ml, ocaml, ocamldep, quiet, traverse }
-/usr/bin/ocamldep.opt -modules defunct.ml > defunct.ml.depends
+/usr/bin/ocamldep.opt -modules defunct.ml > defunct.ml.depends # cached
 # Target: pllib/atom.ml.depends, tags: { extension:ml, file:pllib/atom.ml, ocaml, ocamldep, quiet, traverse }
 /usr/bin/ocamldep.opt -modules pllib/atom.ml > pllib/atom.ml.depends # cached
 # Target: pllib/identifier.ml.depends, tags: { extension:ml, file:pllib/identifier.ml, ocaml, ocamldep, quiet, traverse }
@@ -87,16 +87,16 @@ ocamlopt -runtime-variant _pic -c -g -I pllib -o pllib/identifierChop.cmx pllib/
 ocamlopt -runtime-variant _pic -c -g -I pllib -o pllib/identifier.cmx pllib/identifier.ml # cached
 # Target: pllib/atom.cmx, tags: { compile, extension:cmx, extension:ml, file:pllib/atom.cmx, file:pllib/atom.ml, implem, native, ocaml, quiet, traverse }
 ocamlopt -runtime-variant _pic -c -g -I pllib -o pllib/atom.cmx pllib/atom.ml # cached
+# Target: pllib/error.ml.depends, tags: { extension:ml, file:pllib/error.ml, ocaml, ocamldep, quiet, traverse }
+/usr/bin/ocamldep.opt -modules pllib/error.ml > pllib/error.ml.depends # cached
+# Target: pllib/error.cmx, tags: { compile, extension:cmx, extension:ml, file:pllib/error.cmx, file:pllib/error.ml, implem, native, ocaml, quiet, traverse }
+ocamlopt -runtime-variant _pic -c -g -I pllib -o pllib/error.cmx pllib/error.ml # cached
 # Target: symbols.ml.depends, tags: { extension:ml, file:symbols.ml, ocaml, ocamldep, quiet, traverse }
 /usr/bin/ocamldep.opt -modules symbols.ml > symbols.ml.depends # cached
 # Target: symbols.mli.depends, tags: { extension:mli, file:symbols.mli, ocaml, ocamldep, quiet, traverse }
 /usr/bin/ocamldep.opt -modules symbols.mli > symbols.mli.depends # cached
 # Target: symbols.cmi, tags: { byte, compile, extension:mli, file:symbols.mli, interf, ocaml, quiet, traverse }
 /usr/bin/ocamlc.opt -c -g -I pllib -o symbols.cmi symbols.mli # cached
-# Target: pllib/error.ml.depends, tags: { extension:ml, file:pllib/error.ml, ocaml, ocamldep, quiet, traverse }
-/usr/bin/ocamldep.opt -modules pllib/error.ml > pllib/error.ml.depends # cached
-# Target: pllib/error.cmx, tags: { compile, extension:cmx, extension:ml, file:pllib/error.cmx, file:pllib/error.ml, implem, native, ocaml, quiet, traverse }
-ocamlopt -runtime-variant _pic -c -g -I pllib -o pllib/error.cmx pllib/error.ml # cached
 # Target: types.ml.depends, tags: { extension:ml, file:types.ml, ocaml, ocamldep, quiet, traverse }
 /usr/bin/ocamldep.opt -modules types.ml > types.ml.depends # cached
 # Target: types.cmx, tags: { compile, extension:cmx, extension:ml, file:types.cmx, file:types.ml, implem, native, ocaml, quiet, traverse }
@@ -107,6 +107,8 @@ ocamlopt -runtime-variant _pic -c -g -I pllib -o terms.cmx terms.ml # cached
 ocamlopt -runtime-variant _pic -c -g -I pllib -o symbols.cmx symbols.ml # cached
 # Target: syntax.cmx, tags: { compile, extension:cmx, extension:ml, file:syntax.cmx, file:syntax.ml, implem, native, ocaml, quiet, traverse }
 ocamlopt -runtime-variant _pic -c -g -I pllib -o syntax.cmx syntax.ml # cached
+# Target: defunct.cmx, tags: { compile, extension:cmx, extension:ml, file:defunct.cmx, file:defunct.ml, implem, native, ocaml, quiet, traverse }
+ocamlopt -runtime-variant _pic -c -g -I pllib -o defunct.cmx defunct.ml # cached
 # Target: internalize.ml.depends, tags: { extension:ml, file:internalize.ml, ocaml, ocamldep, quiet, traverse }
 /usr/bin/ocamldep.opt -modules internalize.ml > internalize.ml.depends # cached
 # Target: pllib/import.ml.depends, tags: { extension:ml, file:pllib/import.ml, ocaml, ocamldep, quiet, traverse }
@@ -167,17 +169,8 @@ ocamlopt -runtime-variant _pic -c -g -I pllib -o print.cmx print.ml # cached
 ocamlopt -runtime-variant _pic -c -g -I pllib -o typerr.cmx typerr.ml # cached
 # Target: typecheck.cmx, tags: { compile, extension:cmx, extension:ml, file:typecheck.cmx, file:typecheck.ml, implem, native, ocaml, quiet, traverse }
 ocamlopt -runtime-variant _pic -c -g -I pllib -o typecheck.cmx typecheck.ml # cached
-# Target: defunct.cmx, tags: { compile, extension:cmx, extension:ml, file:defunct.cmx, file:defunct.ml, implem, native, ocaml, quiet, traverse }
-ocamlopt -runtime-variant _pic -c -g -I pllib -o defunct.cmx defunct.ml
-+ ocamlopt -runtime-variant _pic -c -g -I pllib -o defunct.cmx defunct.ml
-File "defunct.ml", line 15, characters 6-7:
-Warning 26: unused variable f.
-File "defunct.ml", line 16, characters 6-16:
-Warning 26: unused variable type_apply.
-File "defunct.ml", line 42, characters 9-19:
-Warning 26: unused variable body_trans.
 # Target: main.cmx, tags: { compile, extension:cmx, extension:ml, file:main.cmx, file:main.ml, implem, native, ocaml, quiet, traverse }
 ocamlopt -runtime-variant _pic -c -g -I pllib -o main.cmx main.ml # cached
 # Target: main.native, tags: { dont_link_with, extension:native, file:main.native, link, native, ocaml, program, quiet, traverse }
-ocamlopt -runtime-variant _pic -g pllib/identifierChop.cmx pllib/identifier.cmx pllib/atom.cmx pllib/error.cmx types.cmx terms.cmx symbols.cmx syntax.cmx defunct.cmx unionFind.cmx equations.cmx pllib/import.cmx internalize.cmx parser.cmx pllib/lexerUtil.cmx lexer.cmx pllib/export.cmx pprint.cmx print.cmx typerr.cmx typecheck.cmx main.cmx -o main.native
+ocamlopt -runtime-variant _pic -g pllib/identifierChop.cmx pllib/identifier.cmx pllib/atom.cmx pllib/error.cmx types.cmx terms.cmx symbols.cmx syntax.cmx defunct.cmx unionFind.cmx equations.cmx pllib/import.cmx internalize.cmx parser.cmx pllib/lexerUtil.cmx lexer.cmx pllib/export.cmx pprint.cmx print.cmx typerr.cmx typecheck.cmx main.cmx -o main.native # cached
 # Compilation successful.

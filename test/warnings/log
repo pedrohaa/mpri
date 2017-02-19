@@ -1,4 +1,9 @@
 warnings/dead1.f: typechecking did not produce a warning -- this is WRONG!
-warnings/dead2.f: typechecking did not produce a warning -- this is WRONG!
-warnings/dead3.f: typechecking did not produce a warning -- this is WRONG!
-warnings/redundant.f: typechecking did not produce a warning -- this is WRONG!
+Warning: this clause is inaccessible.
+Warning: this clause is inaccessible.
+warnings/dead2.f: successful.
+Warning: this clause is inaccessible.
+Warning: this clause is inaccessible.
+warnings/dead3.f: successful.
+Warning: this clause is redundant.
+warnings/redundant.f: successful.

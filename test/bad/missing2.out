@@ -1,1 +1,0 @@
-forall a b c. eq a b -> c

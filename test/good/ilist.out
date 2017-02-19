@@ -1,1 +1,1 @@
-forall n a b. (a -> b) -> list n a -> list n b
+forall n a b. arrow (arrow a b) (arrow (list n a) (list n b))
