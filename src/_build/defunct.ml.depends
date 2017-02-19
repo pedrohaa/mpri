@@ -1,1 +1,1 @@
-defunct.ml: Atom AtomMap AtomSet Identifier List Symbols Syntax Terms Types
+defunct.ml: Atom AtomMap AtomSet Error Identifier List Symbols Syntax Terms Types

@@ -1,1 +1,0 @@
-forall a b. eq a (b -> b) -> a -> b -> b

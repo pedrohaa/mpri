@@ -464,16 +464,16 @@ let print_program (Prog (tctable, dctable, term) as p) =
   let env = Export.empty in
   let env = AtomMap.fold (fun tc _ env -> Export.bind env tc) tctable env in
   let env = AtomMap.fold (fun dc _ env -> Export.bind env dc) dctable env in
-
+  
   (* Print the algebraic data type definitions. *)
 
-  AtomMap.fold (fun tc arity accu ->
+  let s = AtomMap.fold (fun tc arity accu ->
     print_tc p env tc arity ^^ accu
-  ) tctable empty ^^
+            ) tctable empty
+  in
 
-  (* Print the main program. *)
-
-  text "program" ^^ line ^^
+  (* Print the main program. *)  
+  s ^^ text "program" ^^ line ^^
   pterm env term
 
 (* ------------------------------------------------------------------------- *)

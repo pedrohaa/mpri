@@ -1,19 +1,16 @@
-Fatal error: exception Failure("deu ruim")
-bad/amismatch1.f: typechecking the source program FAILED with an exception.
-bad/amismatch2.f: typechecking succeeded -- this is WRONG!
-Fatal error: exception Invalid_argument("List.map2")
-bad/amismatch3.f: typechecking the source program FAILED with an exception.
-bad/amismatch4.f: typechecking succeeded -- this is WRONG!
+bad/amismatch1.f: successful.
+bad/amismatch2.f: successful.
+bad/amismatch3.f: successful.
+bad/amismatch4.f: successful.
 bad/expected1.f: successful.
 bad/expected2.f: successful.
 bad/expected3.f: successful.
 bad/mismatch1.f: successful.
 bad/mismatch2.f: successful.
 bad/mismatch3.f: successful.
-bad/mismatch4.f: typechecking succeeded -- this is WRONG!
-bad/missing1.f: typechecking succeeded -- this is WRONG!
-bad/missing2.f: typechecking succeeded -- this is WRONG!
-bad/tcmismatch.f: typechecking succeeded -- this is WRONG!
-Fatal error: exception Failure("Equations do not entail")
-bad/unsatisfied1.f: typechecking the source program FAILED with an exception.
-bad/unsatisfied2.f: typechecking succeeded -- this is WRONG!
+bad/mismatch4.f: successful.
+bad/missing1.f: successful.
+bad/missing2.f: successful.
+bad/tcmismatch.f: successful.
+bad/unsatisfied1.f: successful.
+bad/unsatisfied2.f: successful.

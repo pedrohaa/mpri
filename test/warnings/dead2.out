@@ -1,5 +1,1 @@
-Esquema: forall e a_1_ b. { term (cons e a_1_) b } -> term e (a_1_ -> b)
-Esquema: forall e a_1_. { var e a_1_ } -> term e a_1_
-Esquema: forall e a_1_. {} -> var (cons e a_1_) a_1_
-Esquema: {} -> env nil
 forall a. a -> a

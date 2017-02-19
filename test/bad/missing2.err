@@ -1,0 +1,5 @@
+File "bad/missing2.f", line 11, characters 2-29:
+A case for the data constructor Eq is missing.
+Hypotheses:
+var_1_ = a
+var = b

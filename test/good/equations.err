@@ -1,0 +1,6 @@
+File "good/equations.f", line 27, characters 6-23:
+This type equation should but does not hold:
+b = a
+Hypotheses:
+_ = a
+__1_ = b

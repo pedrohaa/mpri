@@ -80,8 +80,39 @@ let rec remove_forall (ty : ftype) (tyList : ftype list) : ftype =
   | TyForall _, [] -> failwith "deu ruim"
   | _ , hd :: tl -> failwith "deu ruim"
   | t , [] -> t
+
+let rec gen_fresh_vars l xenv = function
+  | 0 ->
+     (l, xenv)
+  | n ->
+     let at = Atom.fresh (Identifier.mk "var" Syntax.type_sort) in
+     gen_fresh_vars ((TyFreeVar at) :: l) (Export.bind xenv at)(n - 1)
+                
+let rec fills xenv loc at type_abs types expected found =
+  match types, type_abs with 
+      | [], ty -> ty
+      | hd :: tl, TyForall ctx -> fills xenv loc at (fill ctx hd) tl expected (found + 1)
+      | _, _ -> arity_mismatch xenv loc "data constructor" at "type" expected found
            
-           
+let check_missing_clause
+      (p : program)
+      (xenv : Export.env) (*Original xenv*)
+      (hyps : equations) (*Original equations*)
+      (loc : Error.location) (* a location, for reporting errors; *)
+      (at : Atom.atom)
+      (ty2 : ftype list) (*types applied to constructor*)
+    : unit =
+  let tyScheme = type_scheme p at in
+  let (types, xenv2) = gen_fresh_vars [] xenv (count_foralls tyScheme) in
+  let instantiated_scheme = fills xenv loc at tyScheme types (List.length types) 1 in
+  let (hyps2, ty) = build_equations hyps instantiated_scheme in
+  let (domain, codomain) = deconstruct_arrow xenv loc ty in
+  let types = deconstruct_tuple xenv loc domain in
+  let (k, ty1) = deconstruct_tycon2 xenv loc codomain in
+  let hyps2 = List.append (List.combine ty1 ty2) hyps in
+  if not (inconsistent hyps2) then
+    missing_clause xenv2 hyps2 loc at
+
 let rec infer              (* [infer] expects... *)
     (p : program)          (* a program, which provides information about type & data constructors; *)
     (xenv : Export.env)    (* a pretty-printer environment, for printing types; *)
@@ -93,7 +124,8 @@ let rec infer              (* [infer] expects... *)
   
   match term with
 
-  | TeVar (at) -> lookup at tenv
+  | TeVar (at) ->
+     lookup at tenv
                          
   | TeAbs (at, type_domain, term_body, info) -> (*\lambda at : type_domain. term_body*)
      let type_image = infer p (Export.bind xenv at) loc hyps (bind at type_domain tenv) term_body in
@@ -103,25 +135,19 @@ let rec infer              (* [infer] expects... *)
   | TeApp (t1, t2, info) -> (*t1 t2*)
      let type_arrow = infer p xenv loc hyps tenv t1 in
      let (domain, image) = deconstruct_arrow xenv loc type_arrow in
-     let type_domain' = infer p xenv loc hyps tenv t2 in
-     if equal domain type_domain' then
-       (info := Some {domain = domain; codomain = image}; 
-       image)
-     else
-       failwith "Does not typecheck! (App)"
-
+     check p xenv hyps tenv t2 domain;
+     info := Some {domain = domain; codomain = image};
+     image
+                     
   | TeLet (at, t1, t2) -> (*let at = t1 in t2*)
      let ty1 = infer p (Export.bind xenv at) loc hyps tenv t1 in
      let ty2 = infer p (Export.bind xenv at) loc hyps (bind at ty1 tenv) t2 in
      ty2
      
   | TeFix (at, ty, t) -> (*fix at : ty . t *)
-     let ty1 = infer p (Export.bind xenv at) loc hyps (bind at ty tenv) t in
-     if equal ty1 ty then
-       ty1
-     else
-       failwith "Does not typecheck (TeFix)"
-                                   
+     check p (Export.bind xenv at) hyps (bind at ty tenv) t ty;
+     ty
+
   | TeTyAbs (at, t1) -> (*\Lambda at. t1*)
      let type_body = infer p (Export.bind xenv at) loc hyps tenv t1 in
      TyForall (abstract at type_body)
@@ -133,19 +159,21 @@ let rec infer              (* [infer] expects... *)
              
   | TeData (k, types, terms) -> (* k types terms*)
      let tyScheme = type_scheme p k in
-     let type_no_quant = remove_forall tyScheme types in
+     let type_no_quant = fills xenv loc k tyScheme types (List.length types) 1 in
      let (d, type_no_eqs) = build_equations [] type_no_quant in
-     print_string ("Esquema: " ^ (print_type xenv tyScheme) ^ "\n");
      if entailment hyps d then
        let (domain, codomain) = deconstruct_arrow xenv loc type_no_eqs in
        let tuple = deconstruct_tuple xenv loc domain in
        let (atCons, listTy) = deconstruct_tycon2 xenv loc codomain in
        (*Need to verify if each term in "terms actually has the right types"*)
-       List.map2 (fun x y -> check p xenv hyps tenv x y) terms tuple;
+       if (List.length terms != List.length tuple) then
+         arity_mismatch xenv loc "data constructor" k "term" (List.length tuple) (List.length terms)
+       else
+         List.map2 (fun x y -> check p xenv hyps tenv x y) terms tuple;
        (*If they don't have the same length, List.map2 will not work*)
        TyCon (atCons, listTy)
      else
-       failwith "Equations do not entail"
+       unsatisfied_equation xenv loc hyps (fst (List.hd d)) (snd (List.hd d));
        
   | TeTyAnnot (term, ty) ->
      (*print_string ("Annot: " ^ (print_type xenv ty) ^ "\n");*)
@@ -153,26 +181,57 @@ let rec infer              (* [infer] expects... *)
      ty
 
   | TeMatch (term, ty, clauses) -> (*Match term of ty with clauses*)
-   
      let type_domain = infer p xenv loc hyps tenv term in
      let (k, types) = deconstruct_tycon2 xenv loc type_domain in
+     let dcs = ref (data_constructors p k) in
+     (*By the end of this opeation, we need to verify if every remaining instance in dcs can't be
+       instantiated under its hypothesis*)
+     List.map (fun x -> check_clause p xenv hyps tenv k dcs ty types x) clauses;
+     AtomSet.iter (fun x -> check_missing_clause p xenv hyps loc x types) !dcs;
      ty
 
   | TeLoc (location, t) ->
      infer p xenv location hyps tenv t
-
-(*and infer_clause
+           
+and check_clause
     (p : program)      
-    (xenv : Export.env)
-    (hyps : equations) 
-    (tenv : tenv)      
-    (clause : clause list)
-    : ftype =
-        
+    (xenv : Export.env) (*Original xenv*)
+    (hyps : equations) (*Original equations*)
+    (tenv : tenv) (*Original environment*)
+    (k_matched : Atom.atom) (*type constructor*)
+    (dcs : AtomSet.t ref) (*data constructors associated with k_matched*)
+    (expected : ftype) (*The type expected*)
+    (ty2 : ftype list) (*types applied to constructor*)
+    (clause : clause) (*Clause to have its type checked*)
+    : unit =
   match clause with
-  | matching -> *)
-
-
+  | Clause (PatData (loc, at, type_atoms, term_atoms), t) ->
+     let Prog (_, _, dc) = p in
+     let tyScheme = type_scheme p at in (*Type Scheme associated with the atom at*)
+     let xenv2 = Export.sbind xenv type_atoms in
+     let xenv2 = Export.sbind xenv2 term_atoms in (*extending the xenv with information in the pattern*)
+     let types = List.map (fun x -> (TyFreeVar x)) type_atoms in (*Types applied in the pattern*)
+     let instantiated_scheme = fills xenv loc at tyScheme types (List.length types) 1 in
+     let (hyps2, ty) = build_equations hyps instantiated_scheme in
+     let (domain, codomain) = deconstruct_arrow xenv loc ty in
+     let types = deconstruct_tuple xenv loc domain in
+     if List.length term_atoms != List.length types then
+       arity_mismatch xenv loc "data constructor" at "type" (List.length types) (List.length term_atoms);
+     let extended_env = List.combine term_atoms types in
+     let tenv2 = binds extended_env tenv in
+     let (k, ty1) = deconstruct_tycon2 xenv loc codomain in
+     if not (Atom.equal k k_matched) then
+       typecon_mismatch xenv loc at k_matched k;
+     let hyps2 = List.append (List.combine ty1 ty2) hyps in
+     if inconsistent hyps2 then
+       inaccessible_clause loc;
+     if AtomSet.mem at !dcs then
+       (dcs := AtomSet.remove at !dcs;
+        check p xenv2 hyps2 tenv2 t expected)
+     else
+       redundant_clause loc
+                  
+     
 and check                  (* [check] expects... *)
     (p : program)          (* a program, which provides information about type & data constructors; *)
     (xenv : Export.env)    (* a pretty-printer environment, for printing types; *)
