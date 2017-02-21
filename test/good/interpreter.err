@@ -1,7 +1,0 @@
-File "good/interpreter.ff", line 99, characters 8-12:
-Type mismatch.
-Expected: term (cons e domain) codomain
-Inferred: term (cons _ domain) codomain
-Hypotheses:
-domain = alpha1
-codomain = alpha2

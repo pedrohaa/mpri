@@ -3,3 +3,4 @@ A case for the data constructor Eq is missing.
 Hypotheses:
 var_1_ = a
 var = b
+var_1_ = var

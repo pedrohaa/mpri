@@ -1,0 +1,1 @@
+forall a b. arrow (eq a (arrow b b)) (arrow a (arrow b b))

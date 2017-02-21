@@ -1,10 +1,10 @@
 good/article.f: successful.
-good/conversion.f: typechecking the source program FAILED.
-good/def.f: typechecking the source program FAILED.
-good/equations.f: typechecking the source program FAILED.
+good/conversion.f: successful.
+good/def.f: typechecking the translated program FAILED.
+good/equations.f: successful.
 good/identity.f: successful.
 good/ilist.f: successful.
-good/interpreter.f: typechecking the translated program FAILED.
+good/interpreter.f: successful.
 good/list.f: successful.
 good/variable-inutile.f: the translation FAILED.
 good/variations.f: successful.

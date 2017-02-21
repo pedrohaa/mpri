@@ -5,3 +5,4 @@ Inferred: a -> a
 Hypotheses:
 _ = a
 __1_ = b
+_ = __1_

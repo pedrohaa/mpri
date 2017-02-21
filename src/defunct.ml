@@ -11,23 +11,20 @@ let get_Some : 'a option -> 'a = function
   | Some a -> a
   | _ -> failwith "Shouldn't be empty"
 
+(*Gets every free variable in the environment*)
 let ftv_env acc tenv = AtomMap.fold (fun key x y -> AtomSet.union (ftv x) y) tenv acc
 
+(*Will be used when building the defunctionalization*)
 let clauses : clause list ref = ref []
-
-(*This function works by the construction of the clauses list*)
-let transform_clauses (arg: Atom.atom) : clause -> clause = function
-  | Clause (pat, TeLet (at, t1, t2)) -> Clause (pat, TeLet (at, TeVar arg, t2))  
-  | _ -> assert false
                                     
-(*Creates the packaging around the new term*)
+(*Creates the packaging around the new term (as described in the paper)*)
 let create_defunct_term (arrow : Atom.atom) (apply : Atom.atom) : fterm =
   let alpha1 = Atom.fresh (Identifier.mk "alpha1" Syntax.type_sort) in
   let alpha2 = Atom.fresh (Identifier.mk "alpha2" Syntax.type_sort) in
   let f = Atom.fresh (Identifier.mk "f" Syntax.term_sort) in
   let arg = Atom.fresh (Identifier.mk "arg" Syntax.term_sort) in
+  (*\tau_apply*)
   let type_apply = foralls [alpha1; alpha2] (arrows [TyCon (arrow, [TyFreeVar alpha1; TyFreeVar alpha2]); TyFreeVar alpha1] (TyFreeVar alpha2)) in
-  (*Need to annotate the term somehow*)
   clauses := List.map (fun cl ->
                  match cl with
                  | Clause (pat, TeLet (at, TeTyAnnot (t1, ty), t2)) -> Clause (pat, TeLet (at, TeTyAnnot (TeVar arg, ty), t2))
@@ -40,21 +37,23 @@ let create_defunct_term (arrow : Atom.atom) (apply : Atom.atom) : fterm =
   TeFix (apply, type_apply, t)
 
 let rec translate_type (arrow : Atom.atom) : ftype -> ftype = function
+  (* T -> T *)
   | TyArrow (TyTuple t1, TyCon (t2, tl2)) ->
      TyArrow (translate_type arrow (TyTuple t1), translate_type arrow (TyCon (t2, tl2)))
   | TyArrow (domain, codomain) ->
      TyCon (arrow, ([translate_type arrow domain; translate_type arrow codomain]))
-      (* T -> T *)
+  (*\forall ctx*)
   | TyForall context->
      let at = Atom.fresh (hint context) in
      TyForall (abstract at (translate_type arrow (fill context (TyFreeVar at)) ))
-
-  | TyCon (k, body_type) -> TyCon (k, List.map (translate_type arrow) body_type) 
   (* tc T ... T *)
-  | TyTuple (types) -> TyTuple (List.map (translate_type arrow) types)
+  | TyCon (k, body_type) -> TyCon (k, List.map (translate_type arrow) body_type) 
   (* { T; ... T } *)
+  | TyTuple (types) -> TyTuple (List.map (translate_type arrow) types)
+  (*ty1 where (ty2 = ty3)*)
   | TyWhere (ty1, ty2, ty3) ->
      TyWhere ((translate_type arrow ty1), (translate_type arrow ty2), (translate_type arrow ty3))
+  (*If it's a variable, it stays the same*)
   | ty -> ty
             
 let rec translate_term (apply : Atom.atom) (arrow : Atom.atom) (d': datacon_table ref) : fterm -> fterm =
@@ -79,10 +78,11 @@ let rec translate_term (apply : Atom.atom) (arrow : Atom.atom) (d': datacon_tabl
      (*Get every variable in the environment*)
      let (dom_env, types) = List.split (AtomMap.bindings (info'.tenv)) in
      let env_var = List.map (fun x -> TeVar x) (dom_env) in
-     (*Add new constructor to signature*)
+     (*Add a new constructor to the signature*)
      let abs_type = (foralls (AtomSet.elements free_var) (wheres (TyArrow ((TyTuple (List.map (translate_type arrow) types)), (TyCon (arrow, ([translate_type arrow dom; translate_type arrow codom]))))) info'.hyps)) in
      let abs_type = translate_type arrow abs_type in
      d' := AtomMap.add m abs_type !d';
+     (*add a new clause to the defunctionalized term*)
      clauses := (Clause (PatData (Error.dummy, m, AtomSet.elements free_var, dom_env), TeLet (at, TeTyAnnot (body_trans, translate_type arrow domain), body_trans))) :: !clauses;
      TeData (m, types_list, env_var)
             
@@ -128,8 +128,6 @@ let rec translate_term (apply : Atom.atom) (arrow : Atom.atom) (d': datacon_tabl
   | TeMatch (term, ty, clauses) ->
      let term_trans = translate_term apply arrow d' term in
      let ty_trans = translate_type arrow ty in
-     (*Need to finish the clause case in the type checker so that the info field can be filled*)
-     
      let clauses' = List.map (fun (Clause (p, t)) -> Clause (p, translate_term apply arrow d' t)) clauses in
      TeMatch (term_trans, ty_trans, clauses')
   (* match t return T with clause ... clause end *)
@@ -140,10 +138,10 @@ let rec translate_term (apply : Atom.atom) (arrow : Atom.atom) (d': datacon_tabl
   
 let translate (prog : Terms.program) =
   let Prog (type_table, data_con, t) = prog in
-  let apply = Atom.fresh (Identifier.mk "apply__term" Syntax.term_sort) in
+  let apply = Atom.fresh (Identifier.mk "apply" Syntax.term_sort) in
   let arrow = Atom.fresh (Identifier.mk "arrow" Syntax.type_sort) in
   let type_table = AtomMap.add arrow 2 type_table in
-  (* We translate all data constructors to replace lambda abstractions by Arrow *)
+  (* We translate all data constructors to replace function types to the Arrow data constructor*)
   let data_con = AtomMap.map (translate_type arrow) data_con in
   let d' = ref data_con in
   let t' = translate_term apply arrow d' t in

@@ -1,4 +1,5 @@
-warnings/dead1.f: typechecking did not produce a warning -- this is WRONG!
+Warning: this clause is inaccessible.
+warnings/dead1.f: successful.
 Warning: this clause is inaccessible.
 Warning: this clause is inaccessible.
 warnings/dead2.f: successful.
